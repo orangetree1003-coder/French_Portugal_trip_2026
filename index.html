@@ -8,141 +8,76 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap');
-        
-        :root {
-            --warm-terracotta: #E2725B;
-            --sunny-gold: #FFD700;
-            --bg-sand: #FAF7F2;
-        }
-
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: var(--bg-sand);
-            color: #4A4A4A;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        :root { --sunny-gold: #FFD700; --warm-terracotta: #E2725B; --bg-sand: #FAF7F2; }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-sand); color: #4A4A4A; overflow-x: hidden; touch-action: pan-y; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* 頁首銜接 */
-        .content-overlap {
-            margin-top: -40px;
-            border-top-left-radius: 35px;
-            border-top-right-radius: 35px;
-            background-color: var(--bg-sand);
-            position: relative;
-            z-index: 20;
-        }
-
-        .app-card {
-            border-radius: 24px;
-            box-shadow: 0 8px 20px -4px rgba(226, 114, 91, 0.12);
-        }
-
-        /* 點選日期時的金黃色效果 */
-        .date-item-active {
-            background-color: var(--sunny-gold) !important;
-            color: #4b3a00 !important;
-            transform: scale(1.05);
-            box-shadow: 0 6px 15px rgba(255, 215, 0, 0.4);
-        }
-
-        .glass-tab {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(226, 114, 91, 0.2);
-        }
-
+        .content-overlap { margin-top: -40px; border-top-left-radius: 35px; border-top-right-radius: 35px; background-color: var(--bg-sand); position: relative; z-index: 20; min-height: calc(100vh - 210px); }
+        .app-card { border-radius: 24px; box-shadow: 0 8px 20px -4px rgba(226, 114, 91, 0.1); }
+        .date-item-active { background-color: var(--sunny-gold) !important; color: #4A4A11 !important; transform: scale(1.05); box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4); border: 2px solid white; }
+        .glass-tab { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(226, 114, 91, 0.1); }
         .title-font { font-family: 'Playfair Display', serif; }
-        
-        /* 彈窗樣式 */
         .modal-bg { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        .itinerary-container { position: relative; width: 100%; }
+        /* 固定滾動穩定度 */
+        html, body { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     </style>
 </head>
 <body>
-
-<div id="app" class="max-w-md mx-auto min-h-screen pb-24 relative bg-[#FAF7F2] shadow-2xl">
+<div id="app" class="max-w-md mx-auto min-h-screen pb-24 relative shadow-2xl bg-[#FAF7F2]">
     
     <header class="relative w-full h-[250px] overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?q=80&w=1920&auto=format&fit=crop" 
-             alt="Porto Banner" class="w-full h-full object-cover">
-        
+        <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?q=80&w=1920&auto=format&fit=crop" class="w-full h-full object-cover">
         <nav class="absolute bottom-12 right-4 flex gap-2 z-30">
-            <button @click="currentTab = 'itinerary'" :class="tabStyle('itinerary')">
-                <i data-lucide="map-pin" class="w-5 h-5"></i>
-            </button>
-            <button @click="currentTab = 'info'" :class="tabStyle('info')">
-                <i data-lucide="info" class="w-5 h-5"></i>
-            </button>
-            <button @click="currentTab = 'shopping'" :class="tabStyle('shopping')">
-                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-            </button>
-            <button @click="currentTab = 'expense'" :class="tabStyle('expense')">
-                <i data-lucide="coins" class="w-5 h-5"></i>
-            </button>
+            <button @click="currentTab = 'itinerary'" :class="tabStyle('itinerary')"><i data-lucide="map" class="w-5 h-5"></i></button>
+            <button @click="currentTab = 'info'" :class="tabStyle('info')"><i data-lucide="info" class="w-5 h-5"></i></button>
+            <button @click="currentTab = 'shopping'" :class="tabStyle('shopping')"><i data-lucide="shopping-cart" class="w-5 h-5"></i></button>
+            <button @click="currentTab = 'expense'" :class="tabStyle('expense')"><i data-lucide="coins" class="w-5 h-5"></i></button>
         </nav>
-
         <div class="absolute top-10 left-6 text-white drop-shadow-lg">
-            <h1 class="title-font text-2xl tracking-wide">Y2026 CDG</h1>
-            <p class="text-sm font-bold opacity-90">肯恰那 叮叮叮</p>
+            <h1 class="title-font text-2xl">Y2026 CDG</h1>
+            <p class="text-sm font-bold tracking-widest">肯恰那 叮叮叮</p>
         </div>
     </header>
 
     <main class="content-overlap p-5">
-        
         <div v-show="currentTab === 'itinerary'">
             <div class="app-card bg-white p-4 mb-6 flex justify-between items-center border-b-4 border-yellow-400">
                 <div class="flex items-center gap-3">
-                    <div class="p-2 bg-orange-50 rounded-full">
-                        <i :data-lucide="cityWeather.icon" class="w-8 h-8 text-orange-400"></i>
-                    </div>
+                    <div class="p-2 bg-orange-50 rounded-full"><i :data-lucide="cityWeather.icon" class="w-8 h-8 text-orange-400"></i></div>
                     <div>
-                        <div class="text-[10px] text-orange-400 font-bold uppercase">{{ cityWeather.status }}</div>
-                        <div class="text-xl font-bold text-slate-700">{{ cityWeather.temp }}°C</div>
+                        <div class="text-[10px] text-orange-400 font-bold uppercase tracking-tighter">Local Weather</div>
+                        <div class="text-xl font-bold text-slate-700">{{ cityWeather.temp }}°C <span class="text-sm font-normal text-slate-400">{{ cityWeather.status }}</span></div>
                     </div>
                 </div>
-                <div class="text-right">
-                    <div class="text-xs font-bold text-slate-500">{{ cityWeather.city }}</div>
-                    <div class="text-[10px] text-slate-400 italic">Feels like {{ cityWeather.feel }}°C</div>
-                </div>
+                <div class="text-right"><div class="text-xs font-bold text-slate-500">{{ cityWeather.city }}</div></div>
             </div>
 
             <div class="flex overflow-x-auto no-scrollbar gap-3 mb-6 py-2">
-                <div v-for="day in travelDates" :key="day.date" 
-                     @click="selectedDate = day.date"
-                     class="flex-shrink-0 w-14 py-3 rounded-2xl flex flex-col items-center transition-all duration-300 bg-white text-slate-400 shadow-sm"
+                <div v-for="day in travelDates" :key="day.date" @click="selectedDate = day.date"
+                     class="flex-shrink-0 w-14 py-3 rounded-2xl flex flex-col items-center transition-all bg-white text-slate-400 shadow-sm"
                      :class="{'date-item-active': selectedDate === day.date}">
                     <span class="text-[10px] font-bold">{{ day.weekday }}</span>
                     <span class="text-lg font-bold">{{ day.dayNum }}</span>
                 </div>
             </div>
 
-            <div id="itinerary-list" class="space-y-4">
+            <div id="itinerary-list" class="space-y-4 itinerary-container">
                 <div v-for="(item, index) in filteredItinerary" :key="item.id">
-                    <div v-if="index > 0" class="flex flex-col items-center my-2 ml-10 opacity-30">
-                        <div class="w-0.5 h-4 border-l-2 border-dotted border-orange-400"></div>
-                        <i :data-lucide="item.transportMode || 'walking'" class="w-3 h-3 text-orange-400"></i>
-                        <div class="w-0.5 h-4 border-l-2 border-dotted border-orange-400"></div>
+                    <div v-if="item.type === 'transport'" class="flex items-center gap-2 ml-10 my-2 opacity-40">
+                        <div class="w-0.5 h-6 border-l-2 border-dotted border-orange-300"></div>
+                        <span class="text-[10px] font-bold text-orange-500">[{{ item.name }}]</span>
                     </div>
-
-                    <div :class="['app-card p-4 transition-all active:scale-95', item.category === 'flight' ? 'bg-orange-500 text-white' : 'bg-white shadow-sm']">
+                    <div v-else :class="['app-card p-4 bg-white shadow-sm border-l-4', item.category === 'flight' ? 'border-orange-500' : 'border-blue-400']">
                         <div class="flex gap-4">
-                            <div :class="['p-3 rounded-2xl', item.category === 'flight' ? 'bg-orange-400' : 'bg-orange-50']">
-                                <i :data-lucide="getIcon(item.category)" :class="['w-6 h-6', item.category === 'flight' ? 'text-white' : 'text-orange-500']"></i>
-                            </div>
+                            <div class="p-3 bg-orange-50 rounded-2xl"><i :data-lucide="getIcon(item.category)" class="w-6 h-6 text-orange-500"></i></div>
                             <div class="flex-1">
                                 <div class="flex justify-between items-start">
-                                    <h3 class="font-bold text-lg leading-tight">{{ item.name }}</h3>
-                                    <button @click="openMap(item.name)" :class="item.category === 'flight' ? 'text-white' : 'text-blue-500'">
-                                        <i data-lucide="navigation" class="w-5 h-5"></i>
-                                    </button>
+                                    <h3 class="font-bold text-md tracking-tight">{{ item.time }} | {{ item.name }}</h3>
+                                    <button @click="openMap(item.name)" class="text-blue-500"><i data-lucide="navigation" class="w-4 h-4"></i></button>
                                 </div>
-                                <div v-if="item.note" class="mt-2 text-[11px] p-2 rounded-xl italic" :class="item.category === 'flight' ? 'bg-white/20' : 'bg-orange-50/50 text-slate-500'">
-                                    {{ item.note }}
-                                </div>
+                                <p class="text-[11px] text-slate-400 mt-1 italic">{{ item.note }}</p>
                             </div>
                         </div>
                     </div>
@@ -150,268 +85,209 @@
             </div>
         </div>
 
-        <div v-show="currentTab === 'info'" class="space-y-6">
-            <div class="app-card bg-white p-5 border-t-4 border-blue-400 shadow-sm">
-                <div class="flex items-center gap-2 mb-4 font-bold text-blue-600"><i data-lucide="refresh-cw" class="w-5 h-5"></i> 匯率換算 (1 EUR = 35.8 TWD)</div>
-                <input type="number" v-model="calcEuro" class="w-full px-4 py-3 bg-slate-50 rounded-2xl text-xl font-bold outline-none mb-3">
-                <div class="w-full px-4 py-3 bg-blue-50 rounded-2xl text-xl font-bold text-blue-600 text-center">NT$ {{ (calcEuro * 35.8).toLocaleString() }}</div>
-            </div>
-            
-            <div class="app-card bg-white p-5 border-t-4 border-orange-400 shadow-sm">
-                <h3 class="font-bold mb-4 flex items-center gap-2 text-orange-600"><i data-lucide="hotel" class="w-5 h-5"></i> 住宿地址速查</h3>
-                <div class="space-y-3 text-xs">
-                    <div class="p-2 bg-slate-50 rounded-lg"><strong>Paris:</strong> ibis Paris Gare de Lyon Diderot</div>
-                    <div class="p-2 bg-slate-50 rounded-lg"><strong>Nice:</strong> 5 Rue Gustave Deloye</div>
-                    <div class="p-2 bg-slate-50 rounded-lg"><strong>Lisbon:</strong> The Visionaire Apartments</div>
-                    <div class="p-2 bg-slate-50 rounded-lg"><strong>Porto:</strong> Legends' House</div>
-                </div>
-            </div>
-        </div>
-
-        <div v-show="currentTab === 'shopping'" class="space-y-4">
-            <h2 class="text-xl font-bold text-slate-800 title-font">Wish List</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="app-card bg-white h-40 flex flex-col items-center justify-center text-slate-300 border-2 border-dashed border-slate-200">
-                    <i data-lucide="plus" class="w-8 h-8"></i>
-                    <span class="text-xs mt-2">新增商品照片</span>
-                </div>
-            </div>
-        </div>
-
-        <div v-show="currentTab === 'expense'">
-            <div class="app-card bg-slate-800 p-6 text-white mb-6 text-center">
-                <div class="text-xs opacity-60 mb-1 tracking-widest uppercase">Total Expenses</div>
-                <div class="text-3xl font-bold text-yellow-400">€ {{ totalExpenses.toLocaleString() }}</div>
+        <div v-show="currentTab === 'expense'" class="space-y-4">
+            <div class="app-card bg-slate-800 p-6 text-white mb-4">
+                <div class="text-xs opacity-60 uppercase">Total Spent</div>
+                <div class="text-3xl font-bold text-yellow-400 title-font">€ {{ totalExpenses.toFixed(2) }}</div>
             </div>
             
             <div class="space-y-3">
                 <div v-for="exp in expenses" :key="exp.id" class="app-card bg-white p-4 flex justify-between items-center shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
-                            <i :data-lucide="getIcon(exp.category)" class="w-5 h-5"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500"><i :data-lucide="getExpIcon(exp.category)" class="w-5 h-5"></i></div>
                         <div>
                             <div class="text-sm font-bold">{{ exp.name }}</div>
                             <div class="text-[10px] text-slate-400">{{ exp.date }} · {{ exp.method }}</div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-4">
                         <div class="text-orange-600 font-bold">€ {{ exp.amount }}</div>
-                        <button @click="deleteExpense(exp.id)" class="text-slate-300 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button @click="deleteExpense(exp.id)" class="text-slate-300"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>
-                <div v-if="expenses.length === 0" class="text-center py-10 text-slate-300 italic">尚無花費記錄</div>
             </div>
+            <div v-if="expenses.length === 0" class="text-center py-10 text-slate-300 italic">尚未有花費記錄</div>
         </div>
 
+        <div v-show="currentTab === 'info' || currentTab === 'shopping'" class="py-20 text-center text-slate-300">
+            <i data-lucide="construction" class="w-10 h-10 mx-auto mb-2 opacity-20"></i>
+            <div>此功能維護中</div>
+        </div>
     </main>
 
-    <button v-show="currentTab === 'expense'" @click="showModal = true" class="fixed bottom-8 right-8 w-16 h-16 bg-orange-500 text-white rounded-full shadow-2xl flex items-center justify-center z-50 border-4 border-white active:scale-90">
+    <button @click="showModal = true" class="fixed bottom-8 right-8 w-16 h-16 bg-orange-500 text-white rounded-full shadow-2xl flex items-center justify-center z-50 border-4 border-white active:scale-90">
         <i data-lucide="plus" class="w-8 h-8"></i>
     </button>
 
-    <div v-if="showModal" class="fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <h3 class="font-bold text-lg mb-4">新增旅遊花費</h3>
-            <div class="space-y-4">
-                <input v-model="newExp.name" placeholder="項目名稱 (如：午餐)" class="w-full p-3 bg-slate-100 rounded-xl outline-none">
-                <input v-model.number="newExp.amount" type="number" placeholder="金額 (EUR)" class="w-full p-3 bg-slate-100 rounded-xl outline-none">
-                <select v-model="newExp.category" class="w-full p-3 bg-slate-100 rounded-xl outline-none">
+    <div v-if="showModal" class="fixed inset-0 z-[100] modal-bg flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-[35px] sm:rounded-[35px] p-8 space-y-4">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-xl font-bold">新增花費記錄</h3>
+                <button @click="showModal = false"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <input v-model="newExp.name" type="text" placeholder="名稱 (例如: 晚餐)" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+            <div class="flex gap-2">
+                <select v-model="newExp.category" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
                     <option value="food">飲食</option>
                     <option value="transport">交通</option>
                     <option value="stay">住宿</option>
                     <option value="shopping">購物</option>
-                    <option value="view">景點</option>
                 </select>
-                <div class="flex gap-2">
-                    <button @click="showModal = false" class="flex-1 py-3 bg-slate-200 rounded-xl font-bold">取消</button>
-                    <button @click="addExpense" class="flex-1 py-3 bg-orange-500 text-white rounded-xl font-bold">儲存</button>
-                </div>
+                <input v-model="newExp.amount" type="number" placeholder="金額 (€)" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
             </div>
+            <div class="flex gap-2">
+                <input v-model="newExp.date" type="date" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <select v-model="newExp.method" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                    <option value="現金">現金</option>
+                    <option value="信用卡">信用卡</option>
+                </select>
+            </div>
+            <button @click="addExpense" class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-100">儲存記錄</button>
         </div>
     </div>
-
 </div>
 
 <script>
-    const { createApp, ref, computed, onMounted, watch } = Vue;
+const { createApp, ref, computed, onMounted, nextTick } = Vue;
+createApp({
+    setup() {
+        const currentTab = ref('itinerary');
+        const selectedDate = ref('2026/02/07');
+        const showModal = ref(false);
+        const expenses = ref(JSON.parse(localStorage.getItem('travel_expenses') || '[]'));
+        const newExp = ref({ name: '', category: 'food', amount: null, date: '2026-02-07', method: '信用卡' });
 
-    createApp({
-        setup() {
-            const currentTab = ref('itinerary');
-            const selectedDate = ref('2026/02/07');
-            const calcEuro = ref(100);
-            const showModal = ref(false);
+        const travelDates = [
+            { weekday: 'Sat', dayNum: '07', date: '2026/02/07' }, { weekday: 'Sun', dayNum: '08', date: '2026/02/08' },
+            { weekday: 'Mon', dayNum: '09', date: '2026/02/09' }, { weekday: 'Tue', dayNum: '10', date: '2026/02/10' },
+            { weekday: 'Wed', dayNum: '11', date: '2026/02/11' }, { weekday: 'Thu', dayNum: '12', date: '2026/02/12' },
+            { weekday: 'Fri', dayNum: '13', date: '2026/02/13' }, { weekday: 'Sat', dayNum: '14', date: '2026/02/14' },
+            { weekday: 'Sun', dayNum: '15', date: '2026/02/15' }, { weekday: 'Mon', dayNum: '16', date: '2026/02/16' }
+        ];
 
-            // 花費資料 (從 LocalStorage 讀取)
-            const expenses = ref(JSON.parse(localStorage.getItem('trip_expenses') || '[]'));
-            const newExp = ref({ name: '', amount: null, category: 'food', date: '', method: 'Card' });
+        const fullItinerary = [
+            // Day 1
+            { id: 1, date: '2026/02/07', time: '14:00', name: 'ibis Paris Gare de Lyon Diderot', category: 'stay', note: '辦理入住' },
+            { id: 2, date: '2026/02/07', type: 'transport', name: '移動 22分' },
+            { id: 3, date: '2026/02/07', time: '15:30', name: "La Maison d'Isabelle", category: 'food', note: '停留 30分' },
+            { id: 4, date: '2026/02/07', type: 'transport', name: '移動 25分' },
+            { id: 5, date: '2026/02/07', time: '16:30', name: '樂蓬馬歇百貨公司', category: 'shopping', note: '停留 120分' },
+            { id: 6, date: '2026/02/07', type: 'transport', name: '移動 20分' },
+            { id: 7, date: '2026/02/07', time: '18:30', name: 'Breizh Café', category: 'food', note: '停留 90分' },
+            { id: 8, date: '2026/02/07', type: 'transport', name: '移動 15分' },
+            { id: 9, date: '2026/02/07', time: '20:30', name: '巴黎聖母院', category: 'view', note: '停留 60分' },
+            // Day 2
+            { id: 10, date: '2026/02/08', time: '09:30', name: 'Jellycat Pâtisserie', category: 'food', note: '停留 60分' },
+            { id: 11, date: '2026/02/08', type: 'transport', name: '移動 20分' },
+            { id: 12, date: '2026/02/08', time: '11:00', name: 'Bachir 冰淇淋', category: 'food', note: '停留 60分' },
+            { id: 13, date: '2026/02/08', type: 'transport', name: '移動 15分' },
+            { id: 14, date: '2026/02/08', time: '12:30', name: 'Papy aux Fourneaux', category: 'food', note: '午餐 90分' },
+            { id: 15, date: '2026/02/08', type: 'transport', name: '移動 60分' },
+            { id: 16, date: '2026/02/08', time: '15:00', name: '巴黎夏爾·戴高樂機場', category: 'flight', note: '搭機 ➔ 尼斯' },
+            { id: 17, date: '2026/02/08', time: '18:30', name: '5 Rue Gustave Deloye', category: 'stay', note: '尼斯入住' },
+            { id: 18, date: '2026/02/08', time: '19:30', name: 'Maison Margaux', category: 'food', note: '晚餐 90分' },
+            // Day 3
+            { id: 19, date: '2026/02/09', time: '09:00', name: '太陽噴泉', category: 'view', note: '停留 30分' },
+            { id: 20, date: '2026/02/09', type: 'transport', name: '移動 5分' },
+            { id: 21, date: '2026/02/09', time: '10:00', name: 'Place Masséna', category: 'view', note: '停留 60分' },
+            { id: 22, date: '2026/02/09', time: '12:00', name: 'Gusti Restaurant', category: 'food', note: '停留 90分' },
+            { id: 23, date: '2026/02/09', time: '14:00', name: '城堡山公園', category: 'view', note: '停留 90分' },
+            { id: 24, date: '2026/02/09', time: '16:00', name: '賽雷亞花果市集', category: 'shopping', note: '停留 60分' },
+            { id: 25, date: '2026/02/09', time: '18:00', name: 'Peixes', category: 'food', note: '海鮮料理 90分' },
+            // Day 4
+            { id: 26, date: '2026/02/10', time: '09:00', name: '尼斯主教座堂', category: 'view', note: '停留 45分' },
+            { id: 27, date: '2026/02/10', time: '10:00', name: '尼斯老城', category: 'view', note: '停留 90分' },
+            { id: 28, date: '2026/02/10', type: 'transport', name: '移動 40分' },
+            { id: 29, date: '2026/02/10', time: '13:00', name: 'Èze Village', category: 'view', note: '埃茲山城 60分' },
+            { id: 30, date: '2026/02/10', time: '14:30', name: 'Jardin Exotique d’Èze', category: 'view', note: '異國花園 60分' },
+            { id: 31, date: '2026/02/10', type: 'transport', name: '移動 30分' },
+            { id: 32, date: '2026/02/10', time: '16:30', name: '摩納哥親王宮', category: 'view', note: '停留 90分' },
+            // Day 5
+            { id: 33, date: '2026/02/11', time: '08:00', name: '尼斯藍色海岸機場', category: 'flight', note: '搭機 ➔ 里斯本' },
+            { id: 34, date: '2026/02/11', time: '12:30', name: 'The Visionaire Apartments', category: 'stay', note: '入住' },
+            { id: 35, date: '2026/02/11', time: '13:30', name: 'Fábrica da Nata', category: 'food', note: '蛋塔 45分' },
+            { id: 36, date: '2026/02/11', time: '15:00', name: '奧古斯塔街拱門', category: 'view', note: '停留 60分' },
+            { id: 37, date: '2026/02/11', time: '17:00', name: 'Nova Wine Bar', category: 'food', note: '停留 90分' },
+            { id: 38, date: '2026/02/11', time: '19:00', name: '聖胡斯塔升降機', category: 'view', note: '停留 60分' },
+            // Day 6
+            { id: 39, date: '2026/02/12', time: '09:30', name: '聖若熱城堡', category: 'view', note: '停留 120分' },
+            { id: 40, date: '2026/02/12', time: '11:30', name: 'Café da Garagem', category: 'food', note: '停留 60分' },
+            { id: 41, date: '2026/02/12', time: '13:30', name: '恩寵觀景台', category: 'view', note: '停留 60分' },
+            { id: 42, date: '2026/02/12', time: '15:30', name: 'Moona Chicken', category: 'food', note: '停留 60分' },
+            { id: 43, date: '2026/02/12', time: '18:30', name: 'Uma Marisqueira', category: 'food', note: '海鮮燉飯 90分' },
+            // Day 7
+            { id: 44, date: '2026/02/13', time: '09:00', name: 'Casa Pastéis de Belém', category: 'food', note: '停留 60分' },
+            { id: 45, date: '2026/02/13', time: '10:30', name: '貝倫聖母教堂', category: 'view', note: '停留 45分' },
+            { id: 46, date: '2026/02/13', time: '11:30', name: '熱羅尼莫斯修道院', category: 'view', note: '停留 90分' },
+            { id: 47, date: '2026/02/13', time: '13:30', name: '發現者紀念碑', category: 'view', note: '停留 60分' },
+            { id: 48, date: '2026/02/13', time: '15:00', name: '貝倫塔', category: 'view', note: '停留 90分' },
+            // Day 8
+            { id: 49, date: '2026/02/14', time: '09:00', name: '里斯本火車站', category: 'flight', note: '火車 ➔ 波多' },
+            { id: 50, date: '2026/02/14', time: '12:30', name: '聖本圖車站', category: 'view', note: '抵達' },
+            { id: 51, date: '2026/02/14', time: '14:00', name: '波爾圖主教座堂', category: 'view', note: '停留 60分' },
+            { id: 52, date: '2026/02/14', time: '15:30', name: '維多利亞觀景台', category: 'view', note: '停留 45分' },
+            { id: 53, date: '2026/02/14', time: '17:00', name: '利貝拉區 Ribeira', category: 'view', note: '停留 90分' },
+            { id: 54, date: '2026/02/14', time: '19:00', name: 'Taberna Dos Mercadores', category: 'food', note: '停留 120分' },
+            // Day 9
+            { id: 55, date: '2026/02/15', time: '09:00', name: '萊羅書店', category: 'view', note: '停留 90分' },
+            { id: 56, date: '2026/02/15', time: '11:00', name: '教士塔', category: 'view', note: '停留 60分' },
+            { id: 57, date: '2026/02/15', time: '13:00', name: '卡爾莫教堂', category: 'view', note: '停留 45分' },
+            { id: 58, date: '2026/02/15', time: '14:30', name: 'Conga 豬扒包', category: 'food', note: '停留 60分' },
+            { id: 59, date: '2026/02/15', time: '16:30', name: '路易一世大橋', category: 'view', note: '停留 60分' },
+            { id: 60, date: '2026/02/15', time: '18:00', name: 'Sandeman 酒莊', category: 'food', note: '停留 90分' },
+            { id: 61, date: '2026/02/15', time: '19:30', name: '莫羅花園夕陽', category: 'view', note: '停留 60分' },
+            // Day 10
+            { id: 62, date: '2026/02/16', time: '09:30', name: '波爾豪市場', category: 'shopping', note: '停留 90分' },
+            { id: 63, date: '2026/02/16', time: '11:30', name: '聖卡塔琳娜街', category: 'shopping', note: '停留 120分' },
+            { id: 64, date: '2026/02/16', time: '13:30', name: 'Cachorrinho Gazela', category: 'food', note: '停留 60分' },
+            { id: 65, date: '2026/02/16', time: '15:30', name: 'Pingo Doce 超市', category: 'shopping', note: '停留 60分' },
+            { id: 66, date: '2026/02/16', time: '18:30', name: 'Brasão Aliados', category: 'food', note: '停留 90分' }
+        ];
 
-            const travelDates = [
-                { weekday: 'Sat', dayNum: '07', date: '2026/02/07' },
-                { weekday: 'Sun', dayNum: '08', date: '2026/02/08' },
-                { weekday: 'Mon', dayNum: '09', date: '2026/02/09' },
-                { weekday: 'Tue', dayNum: '10', date: '2026/02/10' },
-                { weekday: 'Wed', dayNum: '11', date: '2026/02/11' },
-                { weekday: 'Thu', dayNum: '12', date: '2026/02/12' },
-                { weekday: 'Fri', dayNum: '13', date: '2026/02/13' },
-                { weekday: 'Sat', dayNum: '14', date: '2026/02/14' },
-                { weekday: 'Sun', dayNum: '15', date: '2026/02/15' },
-                { weekday: 'Mon', dayNum: '16', date: '2026/02/16' },
-                { weekday: 'Tue', dayNum: '17', date: '2026/02/17' }
-            ];
+        const cityData = {
+            '2026/02/07': { city: 'Paris', temp: '8', icon: 'cloud' },
+            '2026/02/08': { city: 'Paris/Nice', temp: '12', icon: 'cloud-sun' },
+            '2026/02/09': { city: 'Nice', temp: '15', icon: 'sun' },
+            '2026/02/10': { city: 'Nice', temp: '14', icon: 'sun' },
+            '2026/02/11': { city: 'Lisbon', temp: '17', icon: 'sun' },
+            '2026/02/12': { city: 'Lisbon', temp: '18', icon: 'sun' },
+            '2026/02/13': { city: 'Lisbon', temp: '16', icon: 'cloud' },
+            '2026/02/14': { city: 'Porto', temp: '14', icon: 'cloud-rain' },
+            '2026/02/15': { city: 'Porto', temp: '15', icon: 'sun' },
+            '2026/02/16': { city: 'Porto', temp: '13', icon: 'cloud' }
+        };
 
-            const cityDataMapping = {
-                '2026/02/07': { city: 'Paris, FR', temp: '8', feel: '5', status: 'Partly Cloudy', icon: 'cloud' },
-                '2026/02/08': { city: 'Nice, FR', temp: '14', feel: '13', status: 'Sunny', icon: 'sun' },
-                '2026/02/09': { city: 'Nice, FR', temp: '15', feel: '14', status: 'Sunny', icon: 'sun' },
-                '2026/02/10': { city: 'Nice, FR', temp: '13', feel: '12', status: 'Partly Cloudy', icon: 'cloud-sun' },
-                '2026/02/11': { city: 'Lisbon, PT', temp: '17', feel: '16', status: 'Sunny', icon: 'sun' },
-                '2026/02/12': { city: 'Lisbon, PT', temp: '18', feel: '17', status: 'Sunny', icon: 'sun' },
-                '2026/02/13': { city: 'Lisbon, PT', temp: '16', feel: '15', status: 'Breezy', icon: 'wind' },
-                '2026/02/14': { city: 'Porto, PT', temp: '14', feel: '13', status: 'Cloudy', icon: 'cloud' },
-                '2026/02/15': { city: 'Porto, PT', temp: '15', feel: '14', status: 'Sunny', icon: 'sun' },
-                '2026/02/16': { city: 'Porto, PT', temp: '13', feel: '12', status: 'Partly Cloudy', icon: 'cloud' },
-                '2026/02/17': { city: 'Porto, PT', temp: '14', feel: '13', status: 'Showers', icon: 'cloud-rain' }
-            };
+        const cityWeather = computed(() => cityData[selectedDate.value] || { city: 'Europe', temp: '--', icon: 'sun' });
+        const filteredItinerary = computed(() => fullItinerary.filter(i => i.date === selectedDate.value));
+        const totalExpenses = computed(() => expenses.value.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0));
 
-            const allItinerary = ref([
-                // Day 1 (10 pts)
-                { id: 1, date: '2026/02/07', category: 'flight', name: '抵達 巴黎夏爾·戴高樂機場', note: '抵達 CDG' },
-                { id: 2, date: '2026/02/07', category: 'stay', name: '入住 ibis Paris Gare de Lyon', note: 'Diderot 12ème' },
-                { id: 3, date: '2026/02/07', category: 'food', name: "La Maison d'Isabelle", note: '麵包甜點', transportMode: 'walking' },
-                { id: 4, date: '2026/02/07', category: 'view', name: '樂蓬馬歇百貨公司', note: 'Le Bon Marché Rive Gauche' },
-                { id: 5, date: '2026/02/07', category: 'food', name: 'Breizh Café', note: '可麗餅', transportMode: 'walking' },
-                { id: 6, date: '2026/02/07', category: 'view', name: '巴黎聖母院', note: 'Notre Dame de Paris' },
-                { id: 7, date: '2026/02/07', category: 'food', name: 'Jellycat Pâtisserie', transportMode: 'walking' },
-                { id: 8, date: '2026/02/07', category: 'food', name: 'Bachir 冰淇淋', transportMode: 'walking' },
-                { id: 9, date: '2026/02/07', category: 'food', name: 'Papy aux Fourneaux', note: '晚餐' },
-                { id: 10, date: '2026/02/07', category: 'stay', name: '回到 ibis Paris Gare de Lyon' },
-                
-                // Day 2 (8 pts)
-                { id: 11, date: '2026/02/08', category: 'flight', name: '巴黎夏爾·戴高樂機場', note: '前往尼斯' },
-                { id: 12, date: '2026/02/08', category: 'flight', name: '抵達 尼斯藍色海岸機場', transportMode: 'plane' },
-                { id: 13, date: '2026/02/08', category: 'stay', name: '入住 5 Rue Gustave Deloye', note: '尼斯住宿' },
-                { id: 14, date: '2026/02/08', category: 'food', name: 'Maison Margaux', transportMode: 'walking' },
-                { id: 15, date: '2026/02/08', category: 'view', name: '太陽噴泉', transportMode: 'walking' },
-                { id: 16, date: '2026/02/08', category: 'view', name: '馬塞納廣場 (Place Masséna)' },
-                { id: 17, date: '2026/02/08', category: 'food', name: 'Gusti Restaurant', note: '晚餐' },
-                { id: 18, date: '2026/02/08', category: 'stay', name: '回到 5 Rue Gustave Deloye' },
+        const addExpense = () => {
+            if (!newExp.value.name || !newExp.value.amount) return;
+            expenses.value.unshift({ ...newExp.value, id: Date.now() });
+            localStorage.setItem('travel_expenses', JSON.stringify(expenses.value));
+            showModal.value = false;
+            newExp.value = { name: '', category: 'food', amount: null, date: '2026-02-07', method: '信用卡' };
+            nextTick(() => lucide.createIcons());
+        };
 
-                // Day 3 (6 pts)
-                { id: 19, date: '2026/02/09', category: 'view', name: '城堡山公園 (Colline du Château)', transportMode: 'walking' },
-                { id: 20, date: '2026/02/09', category: 'view', name: '賽雷亞花果市集 (Marché Saleya)' },
-                { id: 21, date: '2026/02/09', category: 'food', name: 'Peixes (餐廳)', transportMode: 'walking' },
-                { id: 22, date: '2026/02/09', category: 'view', name: '尼斯主教座堂' },
-                { id: 23, date: '2026/02/09', category: 'view', name: '尼斯老城 (Vieux Nice)' },
-                { id: 24, date: '2026/02/09', category: 'stay', name: '回到 5 Rue Gustave Deloye' },
+        const deleteExpense = (id) => {
+            expenses.value = expenses.value.filter(e => e.id !== id);
+            localStorage.setItem('travel_expenses', JSON.stringify(expenses.value));
+        };
 
-                // Day 4 (4 pts)
-                { id: 25, date: '2026/02/10', category: 'view', name: 'Èze Village (埃茲)', transportMode: 'bus' },
-                { id: 26, date: '2026/02/10', category: 'view', name: '摩納哥親王宮 (Le Monaco Palace)' },
-                { id: 27, date: '2026/02/10', category: 'view', name: '埃茲異國花園 (Jardin Exotique d’Èze)' },
-                { id: 28, date: '2026/02/10', category: 'stay', name: '回到 5 Rue Gustave Deloye' },
+        const getIcon = (c) => ({ stay: 'home', food: 'utensils', view: 'camera', flight: 'plane', shopping: 'shopping-bag' }[c] || 'map-pin');
+        const getExpIcon = (c) => ({ food: 'utensils', transport: 'car', stay: 'home', shopping: 'shopping-bag' }[c] || 'coins');
+        const tabStyle = (t) => `w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${currentTab.value === t ? 'bg-orange-500 text-white scale-110 shadow-lg' : 'glass-tab text-orange-400'}`;
+        const openMap = (q) => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, '_blank');
 
-                // Day 5 (7 pts)
-                { id: 29, date: '2026/02/11', category: 'flight', name: '尼斯藍色海岸機場 ➔ 里斯本', transportMode: 'plane' },
-                { id: 30, date: '2026/02/11', category: 'stay', name: '入住 The Visionaire Apartments' },
-                { id: 31, date: '2026/02/11', category: 'food', name: 'Fábrica da Nata (蛋塔)', transportMode: 'walking' },
-                { id: 32, date: '2026/02/11', category: 'view', name: '奧古斯塔街拱門' },
-                { id: 33, date: '2026/02/11', category: 'view', name: 'Nova Wine Bar' },
-                { id: 34, date: '2026/02/11', category: 'view', name: '聖胡斯塔升降機' },
-                { id: 35, date: '2026/02/11', category: 'stay', name: '回到 The Visionaire Apartments' },
+        onMounted(() => {
+            lucide.createIcons();
+            setInterval(() => lucide.createIcons(), 500);
+        });
 
-                // Day 6 (6 pts)
-                { id: 36, date: '2026/02/12', category: 'view', name: '聖若熱城堡 (Castelo de S. Jorge)', transportMode: 'bus' },
-                { id: 37, date: '2026/02/12', category: 'food', name: 'Café da Garagem' },
-                { id: 38, date: '2026/02/12', category: 'view', name: '恩寵觀景台 (Miradouro da Graça)' },
-                { id: 39, date: '2026/02/12', category: 'food', name: 'Moona Chicken' },
-                { id: 40, date: '2026/02/12', category: 'food', name: 'Uma Marisqueira (海鮮燉飯)' },
-                { id: 41, date: '2026/02/12', category: 'stay', name: '回到 The Visionaire Apartments' },
-
-                // Day 7 (6 pts)
-                { id: 42, date: '2026/02/13', category: 'food', name: 'Casa Pastéis de Belém (蛋塔)', transportMode: 'tram' },
-                { id: 43, date: '2026/02/13', category: 'view', name: '聖瑪利亞教堂 (Church of Saint Mary)' },
-                { id: 44, date: '2026/02/13', category: 'view', name: '熱羅尼莫斯修道院' },
-                { id: 45, date: '2026/02/13', category: 'view', name: '發現者紀念碑' },
-                { id: 46, date: '2026/02/13', category: 'view', name: '貝倫塔' },
-                { id: 47, date: '2026/02/13', category: 'stay', name: '回到 The Visionaire Apartments' },
-
-                // Day 8 (6 pts)
-                { id: 48, date: '2026/02/14', category: 'flight', name: '抵達 波多聖本圖車站', note: '火車移動', transportMode: 'train' },
-                { id: 49, date: '2026/02/14', category: 'view', name: '波爾圖主教座堂' },
-                { id: 50, date: '2026/02/14', category: 'view', name: '維多利亞觀景台', transportMode: 'walking' },
-                { id: 51, date: '2026/02/14', category: 'view', name: '利貝拉碼頭 (Ribeira do Porto)' },
-                { id: 52, date: '2026/02/14', category: 'food', name: 'Taberna Dos Mercadores' },
-                { id: 53, date: '2026/02/14', category: 'stay', name: '入住 Legends\' House' },
-
-                // Day 9 (8 pts)
-                { id: 54, date: '2026/02/15', category: 'view', name: '萊羅書店 (Livraria Lello)', transportMode: 'walking' },
-                { id: 55, date: '2026/02/15', category: 'view', name: '教士塔 (Torre dos Clérigos)' },
-                { id: 56, date: '2026/02/15', category: 'view', name: '卡爾莫教堂 (Igreja do Carmo)' },
-                { id: 57, date: '2026/02/15', category: 'food', name: 'Conga (豬扒包)' },
-                { id: 58, date: '2026/02/15', category: 'view', name: '路易一世大橋' },
-                { id: 59, date: '2026/02/15', category: 'view', name: 'Sandeman (酒莊)' },
-                { id: 60, date: '2026/02/15', category: 'view', name: '莫羅花園 (Jardim do Morro)' },
-                { id: 61, date: '2026/02/15', category: 'stay', name: '回到 Legends\' House' },
-
-                // Day 10 (7 pts)
-                { id: 62, date: '2026/02/16', category: 'view', name: '波爾豪市場 (Mercado do Bolhão)', transportMode: 'walking' },
-                { id: 63, date: '2026/02/16', category: 'view', name: '聖卡塔琳娜街' },
-                { id: 64, date: '2026/02/16', category: 'food', name: 'Cachorrinho Gazela' },
-                { id: 65, date: '2026/02/16', category: 'shopping', name: 'Pingo Doce (超市)' },
-                { id: 66, date: '2026/02/16', category: 'stay', name: '回到 Legends\' House' },
-                { id: 67, date: '2026/02/16', category: 'food', name: 'Brasão Aliados (濕答答三明治)' },
-                { id: 68, date: '2026/02/16', category: 'stay', name: '回到 Legends\' House' }
-            ]);
-
-            const cityWeather = computed(() => cityDataMapping[selectedDate.value] || cityDataMapping['2026/02/07']);
-            const filteredItinerary = computed(() => allItinerary.value.filter(item => item.date === selectedDate.value));
-            const totalExpenses = computed(() => expenses.value.reduce((sum, e) => sum + e.amount, 0));
-
-            const getIcon = (cat) => ({ 
-                flight: 'plane', stay: 'home', food: 'utensils', 
-                view: 'camera', shopping: 'shopping-bag', transport: 'car' 
-            }[cat] || 'map-pin');
-
-            const tabStyle = (tab) => `w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${currentTab.value === tab ? 'bg-orange-500 text-white scale-110 shadow-lg' : 'glass-tab text-orange-500'}`;
-            const openMap = (q) => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, '_blank');
-
-            // 花費管理
-            const addExpense = () => {
-                if (!newExp.value.name || !newExp.value.amount) return;
-                expenses.value.push({
-                    id: Date.now(),
-                    ...newExp.value,
-                    date: selectedDate.value.split('/')[2] // 取日期
-                });
-                newExp.value = { name: '', amount: null, category: 'food', date: '', method: 'Card' };
-                showModal.value = false;
-            };
-
-            const deleteExpense = (id) => {
-                expenses.value = expenses.value.filter(e => e.id !== id);
-            };
-
-            // 監聽花費變化並儲存
-            watch(expenses, (newVal) => {
-                localStorage.setItem('trip_expenses', JSON.stringify(newVal));
-            }, { deep: true });
-
-            onMounted(() => {
-                lucide.createIcons();
-                Sortable.create(document.getElementById('itinerary-list'), { animation: 200 });
-                setInterval(() => lucide.createIcons(), 600);
-            });
-
-            return { 
-                currentTab, selectedDate, travelDates, filteredItinerary, getIcon, 
-                tabStyle, calcEuro, openMap, cityWeather, expenses, totalExpenses,
-                showModal, newExp, addExpense, deleteExpense
-            };
-        }
-    }).mount('#app');
+        return { currentTab, selectedDate, travelDates, filteredItinerary, getIcon, tabStyle, openMap, cityWeather, expenses, totalExpenses, showModal, newExp, addExpense, deleteExpense, getExpIcon };
+    }
+}).mount('#app');
 </script>
-
 </body>
 </html>
