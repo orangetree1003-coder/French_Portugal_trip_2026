@@ -2,334 +2,521 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>橘子的歐洲冒險 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>橘子的 2026 歐洲冒險</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/4.1.0/vuedraggable.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .glass-morphism { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
-        .tab-shadow { box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); }
+        .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+        .tab-active { background-color: #000; color: #fff; transform: translateY(-2px); }
+        .itinerary-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .itinerary-card:active { scale: 0.98; }
     </style>
 </head>
-<body>
-    <div id="app" class="max-w-md mx-auto min-h-screen relative flex flex-col">
+<body class="antialiased text-slate-900">
+
+<div id="app" class="max-w-md mx-auto min-h-screen flex flex-col relative bg-slate-50 shadow-2xl overflow-x-hidden">
+    
+    <header class="relative h-72 flex-shrink-0 overflow-hidden">
+        <img :src="cityImage" class="w-full h-full object-cover transition-all duration-700 ease-in-out scale-110" alt="city">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
         
-        <div class="relative h-60 bg-gray-900 overflow-hidden">
-            <img :src="cityImage" class="w-full h-full object-cover opacity-70 transition-all duration-500" alt="City View">
-            <div class="absolute bottom-16 left-5 text-white">
-                <h1 class="text-2xl font-bold">{{ currentCityTitle }}</h1>
-                <p class="text-sm opacity-80">Feb 2026 Trip</p>
+        <div class="absolute bottom-16 left-6 text-white">
+            <h1 class="text-3xl font-black tracking-tight">{{ currentCityDisplay }}</h1>
+            <p class="text-sm font-medium opacity-80 flex items-center mt-1">
+                <i data-lucide="calendar" class="w-4 h-4 mr-1"></i> Feb 2026 · 橘子的冒險
+            </p>
+        </div>
+
+        <div class="absolute bottom-4 right-4 left-4 flex justify-between items-center glass-nav p-1.5 rounded-2xl shadow-xl">
+            <button @click="activeTab = 'itinerary'" :class="['flex-1 flex justify-center py-2.5 rounded-xl transition-all', activeTab === 'itinerary' ? 'tab-active' : 'text-slate-500']">
+                <i data-lucide="map-pin" class="w-5 h-5"></i>
+            </button>
+            <button @click="activeTab = 'info'" :class="['flex-1 flex justify-center py-2.5 rounded-xl transition-all', activeTab === 'info' ? 'tab-active' : 'text-slate-500']">
+                <i data-lucide="info" class="w-5 h-5"></i>
+            </button>
+            <button @click="activeTab = 'shopping'" :class="['flex-1 flex justify-center py-2.5 rounded-xl transition-all', activeTab === 'shopping' ? 'tab-active' : 'text-slate-500']">
+                <i data-lucide="shopping-basket" class="w-5 h-5"></i>
+            </button>
+            <button @click="activeTab = 'expense'" :class="['flex-1 flex justify-center py-2.5 rounded-xl transition-all', activeTab === 'expense' ? 'tab-active' : 'text-slate-500']">
+                <i data-lucide="circle-dollar-sign" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 -mt-6 bg-slate-50 rounded-t-[2.5rem] relative z-10 px-5 pt-8 pb-32">
+        
+        <div v-if="activeTab === 'itinerary'" class="space-y-6">
+            
+            <div class="flex items-center justify-between bg-white/80 p-4 rounded-3xl border border-white shadow-sm">
+                <div class="flex items-center">
+                    <div class="bg-blue-50 p-2 rounded-2xl mr-3">
+                        <i data-lucide="cloud-sun" class="w-8 h-8 text-blue-500"></i>
+                    </div>
+                    <div>
+                        <div class="text-xl font-black">8°C <span class="text-xs font-normal text-slate-400">/ 6°C</span></div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">多雲時晴 · 降雨 10%</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] bg-emerald-100 text-emerald-600 px-2 py-1 rounded-full font-black">適合旅遊</span>
+                </div>
             </div>
 
-            <div class="absolute bottom-4 right-4 flex space-x-2 glass-morphism p-1.5 rounded-2xl shadow-lg border border-white/50">
-                <button @click="activeTab = 'itinerary'" :class="tabClass('itinerary')">
-                    <i data-lucide="map-pin" class="w-5 h-5"></i>
-                </button>
-                <button @click="activeTab = 'info'" :class="tabClass('info')">
-                    <i data-lucide="info" class="w-5 h-5"></i>
-                </button>
-                <button @click="activeTab = 'shopping'" :class="tabClass('shopping')">
-                    <i data-lucide="shopping-basket" class="w-5 h-5"></i>
-                </button>
-                <button @click="activeTab = 'expense'" :class="tabClass('expense')">
-                    <i data-lucide="circle-dollar-sign" class="w-5 h-5"></i>
-                </button>
+            <div class="flex space-x-3 overflow-x-auto hide-scrollbar pb-2">
+                <div v-for="d in dates" :key="d.full" 
+                     @click="selectedDate = d.full"
+                     :class="['flex-shrink-0 w-14 h-20 flex flex-col items-center justify-center rounded-2xl transition-all duration-300 cursor-pointer shadow-sm', 
+                              selectedDate === d.full ? 'bg-blue-600 text-white scale-105 shadow-blue-200' : 'bg-white text-slate-400']">
+                    <span class="text-[10px] font-bold uppercase mb-1">{{ d.weekday }}</span>
+                    <span class="text-xl font-black">{{ d.day }}</span>
+                </div>
+            </div>
+
+            <draggable v-model="itineraryData[selectedDate]" item-key="id" handle=".drag-handle" ghost-class="opacity-50">
+                <template #item="{element, index}">
+                    <div class="mb-2">
+                        <div v-if="index > 0" class="flex items-center ml-10 my-3 space-x-3 text-slate-300">
+                            <div class="w-0.5 h-6 bg-slate-200 rounded-full border-dashed border-l"></div>
+                            <div class="flex items-center bg-slate-100 px-3 py-1 rounded-full">
+                                <i :data-lucide="element.prevTransportIcon || 'walking'" class="w-3 h-3 mr-2"></i>
+                                <span class="text-[10px] font-bold">{{ element.travelTime || '15 min' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="itinerary-card bg-white rounded-[1.5rem] p-4 shadow-sm border border-slate-100 relative group flex items-start">
+                            <div class="drag-handle p-2 -ml-2 cursor-grab text-slate-200 hover:text-slate-400 transition-colors">
+                                <i data-lucide="grip-vertical" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1 ml-1" @click="openGoogleMaps(element.name)">
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <span :class="['text-[9px] px-2 py-0.5 rounded-lg font-black uppercase tracking-widest', catStyle(element.category)]">
+                                        {{ element.category }}
+                                    </span>
+                                    <span class="text-slate-400 text-[10px] font-bold flex items-center">
+                                        <i data-lucide="clock" class="w-3 h-3 mr-1"></i> {{ element.time }}
+                                    </span>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-base leading-tight">{{ element.name }}</h3>
+                                <p v-if="element.remark" class="text-xs text-slate-400 mt-1 flex items-start">
+                                    <i data-lucide="text-quote" class="w-3 h-3 mr-1 mt-0.5 flex-shrink-0"></i>
+                                    {{ element.remark }}
+                                </p>
+                            </div>
+                            <button @click.stop="confirmDelete(selectedDate, index)" class="opacity-0 group-hover:opacity-100 p-2 text-rose-300 hover:text-rose-500 transition-all">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </draggable>
+
+            <div v-if="!itineraryData[selectedDate] || itineraryData[selectedDate].length === 0" class="text-center py-12 text-slate-300">
+                <i data-lucide="map" class="w-12 h-12 mx-auto mb-2 opacity-20"></i>
+                <p>這天還沒有行程，點擊下方「＋」新增</p>
             </div>
         </div>
 
-        <main class="flex-1 -mt-5 bg-slate-50 rounded-t-[2.5rem] p-5 shadow-2xl relative z-10 pb-24">
-            
-            <div v-if="activeTab === 'itinerary'">
-                <div class="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm mb-4 border border-blue-50">
-                    <div class="flex items-center">
-                        <i data-lucide="cloud-sun" class="w-8 h-8 text-yellow-500 mr-2"></i>
-                        <div>
-                            <span class="text-lg font-bold">8°C</span>
-                            <span class="text-xs text-gray-500 block">體感 6°C · 巴黎</span>
+        <div v-if="activeTab === 'info'" class="space-y-6">
+            <section class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-slate-800 flex items-center tracking-tight">
+                        <i data-lucide="refresh-cw" class="w-5 h-5 mr-2 text-blue-500"></i> 匯率即時換算
+                    </h3>
+                    <span class="text-[10px] font-bold text-slate-400">1 EUR ≈ 35.2 TWD</span>
+                </div>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <input type="number" v-model="eurInput" class="w-full bg-slate-50 p-4 pt-7 rounded-2xl font-black text-2xl outline-none border-2 border-transparent focus:border-blue-200 transition-all" placeholder="0">
+                        <label class="absolute top-2 left-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">歐元 EUR</label>
+                        <div class="absolute right-4 bottom-4 text-slate-300 font-bold text-xl">€</div>
+                    </div>
+                    <div class="flex justify-center"><i data-lucide="chevron-down" class="text-slate-200"></i></div>
+                    <div class="relative bg-blue-600 p-4 pt-7 rounded-2xl text-white shadow-lg shadow-blue-100">
+                        <div class="text-2xl font-black">{{ (eurInput * 35.2).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) }}</div>
+                        <label class="absolute top-2 left-4 text-[10px] font-black text-blue-200 uppercase tracking-widest">台幣 TWD</label>
+                        <div class="absolute right-4 bottom-4 text-blue-300 font-bold text-xl">NT$</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                <h3 class="font-black text-slate-800 mb-5 flex items-center">
+                    <i data-lucide="plane" class="w-5 h-5 mr-2 text-indigo-500"></i> 航班行程
+                </h3>
+                <div class="space-y-6">
+                    <div v-for="f in flightList" :key="f.no" class="relative">
+                        <div class="flex justify-between items-center text-[10px] font-black text-slate-400 mb-2 px-1 uppercase tracking-tighter">
+                            <span>{{ f.fromCity }}</span>
+                            <span class="text-indigo-500">{{ f.duration }}</span>
+                            <span>{{ f.toCity }}</span>
                         </div>
-                    </div>
-                    <div class="text-right text-xs text-gray-400 font-medium">多雲時晴</div>
-                </div>
-
-                <div class="flex space-x-4 overflow-x-auto hide-scrollbar mb-6 pb-2">
-                    <div v-for="d in dates" :key="d.full" 
-                         @click="selectedDate = d.full"
-                         :class="['flex-shrink-0 flex flex-col items-center justify-center w-14 h-18 py-3 rounded-2xl transition-all cursor-pointer', 
-                                  selectedDate === d.full ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-500']">
-                        <span class="text-[10px] font-medium uppercase">{{ d.weekday }}</span>
-                        <span class="text-xl font-bold">{{ d.day }}</span>
-                    </div>
-                </div>
-
-                <draggable v-model="currentDayPlan" item-key="id" handle=".drag-handle">
-                    <template #item="{element, index}">
-                        <div>
-                            <div v-if="index > 0" class="flex items-center ml-10 my-2 space-x-2 text-gray-400">
-                                <div class="border-l-2 border-dashed border-gray-300 h-6"></div>
-                                <i :data-lucide="element.prevTransportIcon || 'walking'" class="w-4 h-4"></i>
-                                <span class="text-[10px]">{{ element.travelTime || '15 min' }}</span>
+                        <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <div class="text-center">
+                                <div class="text-xl font-black">{{ f.fromCode }}</div>
+                                <div class="text-[10px] text-slate-400 font-bold">{{ f.date }}</div>
                             </div>
-
-                            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 relative group">
-                                <div class="flex items-start">
-                                    <div class="drag-handle cursor-grab mr-3 mt-1 opacity-30 hover:opacity-100">
-                                        <i data-lucide="grip-vertical" class="w-5 h-5"></i>
-                                    </div>
-                                    <div class="flex-1" @click="openGoogleMaps(element.name)">
-                                        <div class="flex justify-between items-center mb-1">
-                                            <span :class="['text-[10px] px-2 py-0.5 rounded-full font-bold uppercase', catStyle(element.category)]">
-                                                {{ element.category }}
-                                            </span>
-                                            <span class="text-gray-400 text-xs flex items-center">
-                                                <i data-lucide="clock" class="w-3 h-3 mr-1"></i> {{ element.time || '自由時段' }}
-                                            </span>
-                                        </div>
-                                        <h3 class="font-bold text-gray-800 text-lg">{{ element.name }}</h3>
-                                        <p v-if="element.remark" class="text-xs text-gray-500 mt-1 line-clamp-1">{{ element.remark }}</p>
-                                    </div>
+                            <div class="flex-1 flex flex-col items-center px-4">
+                                <div class="w-full h-px bg-slate-200 relative">
+                                    <i data-lucide="plane" class="w-3 h-3 text-indigo-500 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90"></i>
                                 </div>
+                                <span class="text-[9px] font-black text-indigo-400 mt-2">{{ f.no }}</span>
                             </div>
-                        </div>
-                    </template>
-                </draggable>
-            </div>
-
-            <div v-if="activeTab === 'info'" class="space-y-6">
-                <section class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-4 flex items-center">
-                        <i data-lucide="refresh-ccw" class="w-5 h-5 mr-2 text-blue-500"></i> 匯率換算 (EUR → TWD)
-                    </h3>
-                    <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-2xl">
-                        <input type="number" v-model="eurInput" class="bg-transparent w-full outline-none font-bold text-xl" placeholder="輸入歐元">
-                        <span class="font-bold text-gray-400">€</span>
-                    </div>
-                    <div class="mt-3 text-center">
-                        <i data-lucide="arrow-down" class="w-4 h-4 mx-auto text-gray-300"></i>
-                        <p class="text-2xl font-black text-blue-600">≈ {{ (eurInput * 35.2).toLocaleString() }} <span class="text-sm">TWD</span></p>
-                    </div>
-                </section>
-
-                <section class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-4 flex items-center italic">
-                        <i data-lucide="plane" class="w-5 h-5 mr-2 text-indigo-500"></i> FLIGHT INFO
-                    </h3>
-                    <div class="border-l-4 border-indigo-500 pl-4 space-y-4">
-                        <div v-for="flight in flights" :key="flight.id" class="relative">
-                            <div class="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                <span>{{ flight.from }}</span>
-                                <div class="flex-1 mx-2 border-b border-dashed border-gray-200"></div>
-                                <span>{{ flight.to }}</span>
+                            <div class="text-center">
+                                <div class="text-xl font-black">{{ f.toCode }}</div>
+                                <div class="text-[10px] text-slate-400 font-bold">FEBRUARY</div>
                             </div>
-                            <div class="flex justify-between items-end mt-1">
-                                <div class="text-2xl font-black">{{ flight.fromCode }}</div>
-                                <div class="text-xs text-indigo-600 bg-indigo-50 px-2 rounded mb-1">{{ flight.flightNo }}</div>
-                                <div class="text-2xl font-black">{{ flight.toCode }}</div>
-                            </div>
-                            <div class="text-[10px] text-gray-500 mt-1 flex justify-between">
-                                <span>{{ flight.date }}</span>
-                                <span>{{ flight.duration }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <div v-if="activeTab === 'shopping'">
-                <div class="grid grid-cols-2 gap-4">
-                    <div v-for="item in shoppingList" :key="item.id" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                        <div class="h-32 bg-gray-100">
-                            <img v-if="item.img" :src="item.img" class="w-full h-full object-cover">
-                            <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
-                                <i data-lucide="image" class="w-8 h-8"></i>
-                            </div>
-                        </div>
-                        <div class="p-3">
-                            <h4 class="font-bold text-sm truncate">{{ item.name }}</h4>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div v-if="activeTab === 'expense'">
-                <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-3xl text-white mb-6 shadow-lg">
-                    <p class="text-xs opacity-80 uppercase tracking-widest mb-1">Total Spent (EUR)</p>
-                    <h2 class="text-4xl font-black">€ {{ totalExpense.toLocaleString() }}</h2>
-                </div>
-                
-                <div class="space-y-3">
-                    <div v-for="exp in expenses" :key="exp.id" class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mr-3 text-xl">
-                                {{ getExpIcon(exp.category) }}
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-800">{{ exp.name }}</h4>
-                                <p class="text-[10px] text-gray-400">{{ exp.date }} · {{ exp.method }}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-black text-gray-800">€ {{ exp.amount }}</span>
+            <section class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+                <h3 class="font-black text-slate-800 mb-5 flex items-center">
+                    <i data-lucide="home" class="w-5 h-5 mr-2 text-emerald-500"></i> 住宿資訊
+                </h3>
+                <div class="space-y-4">
+                    <div v-for="h in hotelList" :key="h.name" @click="openGoogleMaps(h.address)" class="p-4 rounded-2xl bg-slate-50 border border-slate-100 active:bg-slate-100 transition-colors">
+                        <h4 class="font-bold text-sm text-slate-800">{{ h.name }}</h4>
+                        <p class="text-[10px] text-slate-400 mt-1 mb-2">{{ h.dateRange }}</p>
+                        <div class="flex items-center text-[10px] text-blue-500 font-bold">
+                            <i data-lucide="map-pin" class="w-3 h-3 mr-1"></i> {{ h.address }}
                         </div>
                     </div>
                 </div>
+            </section>
+        </div>
+
+        <div v-if="activeTab === 'shopping'" class="space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div v-for="item in shoppingList" :key="item.id" class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100">
+                    <div class="h-32 bg-slate-100 relative group">
+                        <img v-if="item.img" :src="item.img" class="w-full h-full object-cover">
+                        <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
+                            <i data-lucide="image" class="w-8 h-8 opacity-20"></i>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-sm text-slate-700 truncate">{{ item.name }}</h4>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-[10px] font-black text-blue-600">想買</span>
+                            <button @click="confirmDeleteShopping(item.id)" class="text-slate-300 hover:text-rose-500"><i data-lucide="x" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div @click="showAddModal = true" class="border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center h-48 text-slate-300 hover:text-slate-400 hover:border-slate-300 transition-all cursor-pointer">
+                    <i data-lucide="plus-circle" class="w-8 h-8 mb-2"></i>
+                    <span class="text-xs font-bold">新增物品</span>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="activeTab === 'expense'" class="space-y-6">
+            <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-8 opacity-10">
+                    <i data-lucide="wallet" class="w-24 h-24"></i>
+                </div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Total Expenses (EUR)</p>
+                <div class="text-5xl font-black mb-1">€{{ totalExpense.toFixed(1) }}</div>
+                <p class="text-xs text-slate-400">約 NT$ {{ (totalExpense * 35.2).toLocaleString() }}</p>
             </div>
 
-        </main>
+            <div class="space-y-3">
+                <div v-for="exp in expenses" :key="exp.id" class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-50">
+                    <div class="flex items-center">
+                        <div :class="['w-10 h-10 rounded-full flex items-center justify-center mr-3 text-lg', expCatColor(exp.category)]">
+                            {{ expIcon(exp.category) }}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800">{{ exp.name }}</h4>
+                            <p class="text-[10px] text-slate-400">{{ exp.date }} · {{ exp.method }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-black text-slate-800">€{{ exp.amount }}</div>
+                        <button @click="deleteExpense(exp.id)" class="text-[10px] text-rose-300 font-bold">刪除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <button @click="showAddModal = true" class="fixed bottom-10 right-6 w-14 h-14 bg-black text-white rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-95 transition-transform">
+    </main>
+
+    <div class="fixed bottom-8 right-6 z-[100]">
+        <button @click="showAddModal = true" class="w-16 h-16 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform shadow-blue-200">
             <i data-lucide="plus" class="w-8 h-8"></i>
         </button>
-
-        <div v-if="showAddModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showAddModal = false"></div>
-            <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl">
-                <h3 class="text-xl font-black mb-6">新增行程內容</h3>
-                <input v-model="newItem.name" type="text" placeholder="名稱" class="w-full bg-slate-50 p-4 rounded-2xl mb-4 outline-none border focus:border-blue-500">
-                <select v-model="newItem.category" class="w-full bg-slate-50 p-4 rounded-2xl mb-4 outline-none border">
-                    <option value="景點">景點</option>
-                    <option value="美食">美食</option>
-                    <option value="住宿">住宿</option>
-                    <option value="交通">交通</option>
-                </select>
-                <div class="flex space-x-3">
-                    <button @click="showAddModal = false" class="flex-1 py-4 font-bold text-gray-400">取消</button>
-                    <button @click="addItem" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold">確定新增</button>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <script>
-        const { createApp, ref, computed, onMounted, watch } = Vue;
-
-        createApp({
-            components: {
-                draggable: window.vuedraggable
-            },
-            setup() {
-                const activeTab = ref('itinerary');
-                const selectedDate = ref('2026/02/07');
-                const eurInput = ref(0);
-                const showAddModal = ref(false);
-
-                // 城市背景圖
-                const cityImage = computed(() => {
-                    const images = {
-                        '巴黎': 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
-                        '尼斯': 'https://images.unsplash.com/photo-1533619239233-628ce632e948?auto=format&fit=crop&w=800&q=80',
-                        '里斯本': 'https://images.unsplash.com/photo-1585208798174-6cedd862099b?auto=format&fit=crop&w=800&q=80'
-                    };
-                    return images[currentCityTitle.value] || images['巴黎'];
-                });
-
-                const currentCityTitle = computed(() => {
-                    const dateMap = {
-                        '2026/02/07': '巴黎', '2026/02/08': '巴黎',
-                        '2026/02/09': '尼斯', '2026/02/10': '尼斯', '2026/02/11': '尼斯',
-                        '2026/02/12': '里斯本', '2026/02/13': '里斯本'
-                    };
-                    return dateMap[selectedDate.value] || '歐洲之旅';
-                });
-
-                const dates = [
-                    { day: '07', weekday: 'Sat', full: '2026/02/07' },
-                    { day: '08', weekday: 'Sun', full: '2026/02/08' },
-                    { day: '09', weekday: 'Mon', full: '2026/02/09' },
-                    { day: '10', weekday: 'Tue', full: '2026/02/10' },
-                    { day: '11', weekday: 'Wed', full: '2026/02/11' },
-                    { day: '12', weekday: 'Thu', full: '2026/02/12' },
-                    { day: '13', weekday: 'Fri', full: '2026/02/13' }
-                ];
-
-                const itineraryData = ref({
-                    '2026/02/07': [
-                        { id: 1, category: '航班', name: '抵達 巴黎戴高樂機場', time: '10:30', remark: '起點：CDG', travelTime: '接駁 45 min', prevTransportIcon: 'bus' },
-                        { id: 2, category: '住宿', name: 'ibis Paris Gare de Lyon', time: '14:00', remark: '入住手續', travelTime: '步行 5 min', prevTransportIcon: 'walking' },
-                        { id: 3, category: '美食', name: 'La Maison d’Isabelle', time: '16:00', remark: '必吃可頌', travelTime: '步行 12 min', prevTransportIcon: 'walking' },
-                        { id: 4, category: '景點', name: '巴黎聖母院', time: '18:00', remark: '打卡地標' }
-                    ],
-                    '2026/02/08': [
-                        { id: 5, category: '美食', name: 'Jellycat Pâtisserie', time: '10:00', remark: '超可愛甜點' },
-                        { id: 6, category: '景點', name: '樂蓬馬歇百貨公司', time: '14:00', remark: '買買買' }
-                    ]
-                });
-
-                const flights = [
-                    { id: 1, from: 'Paris', fromCode: 'CDG', to: 'Nice', toCode: 'NCE', date: '02/09', flightNo: 'AF7700', duration: '1h 30m' },
-                    { id: 2, from: 'Nice', fromCode: 'NCE', to: 'Lisbon', toCode: 'LIS', date: '02/12', flightNo: 'TP1273', duration: '2h 45m' }
-                ];
-
-                const expenses = ref([
-                    { id: 1, category: '飲食', name: '可頌與咖啡', date: '2026-02-07', amount: 12.5, method: '現金' },
-                    { id: 2, category: '交通', name: 'RER 機場接駁', date: '2026-02-07', amount: 11.45, method: '信用卡' }
-                ]);
-
-                const shoppingList = ref([
-                    { id: 1, name: 'Longchamp 小羊皮包', img: 'https://images.unsplash.com/photo-1584917033904-493bb3ce3af1?auto=format&fit=crop&w=400&q=80' },
-                    { id: 2, name: 'City Pharma 藥妝', img: null }
-                ]);
-
-                const currentDayPlan = computed({
-                    get: () => itineraryData.value[selectedDate.value] || [],
-                    set: (val) => { itineraryData.value[selectedDate.value] = val; }
-                });
-
-                const totalExpense = computed(() => expenses.value.reduce((sum, exp) => sum + exp.amount, 0));
-
-                const newItem = ref({ name: '', category: '景點' });
-
-                const addItem = () => {
-                    if (!newItem.value.name) return;
-                    if (!itineraryData.value[selectedDate.value]) itineraryData.value[selectedDate.value] = [];
-                    itineraryData.value[selectedDate.value].push({
-                        id: Date.now(),
-                        ...newItem.value,
-                        time: '12:00'
-                    });
-                    newItem.value = { name: '', category: '景點' };
-                    showAddModal.value = false;
-                };
-
-                const openGoogleMaps = (query) => {
-                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-                    window.open(url, '_blank');
-                };
-
-                const tabClass = (tab) => `p-3 rounded-xl transition-all ${activeTab.value === tab ? 'bg-black text-white' : 'text-gray-500'}`;
+    <div v-if="showAddModal" class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddModal = false"></div>
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <h3 class="text-2xl font-black mb-6 text-slate-800">新增{{ activeTab === 'itinerary' ? '行程' : '記錄' }}</h3>
+            
+            <div class="space-y-4">
+                <input v-model="newItem.name" type="text" placeholder="名稱 (例如：巴黎鐵塔)" class="w-full bg-slate-50 p-4 rounded-2xl outline-none border-2 border-transparent focus:border-blue-500">
                 
-                const catStyle = (cat) => {
-                    const styles = {
-                        '航班': 'bg-indigo-100 text-indigo-600',
-                        '景點': 'bg-emerald-100 text-emerald-600',
-                        '美食': 'bg-orange-100 text-orange-600',
-                        '住宿': 'bg-blue-100 text-blue-600'
-                    };
-                    return styles[cat] || 'bg-gray-100 text-gray-600';
-                };
+                <div v-if="activeTab === 'itinerary'">
+                    <select v-model="newItem.category" class="w-full bg-slate-50 p-4 rounded-2xl outline-none appearance-none border-2 border-transparent">
+                        <option value="景點">景點</option>
+                        <option value="美食">美食</option>
+                        <option value="住宿">住宿</option>
+                        <option value="交通">交通</option>
+                        <option value="購物">購物</option>
+                        <option value="航班">航班</option>
+                    </select>
+                </div>
 
-                const getExpIcon = (cat) => {
-                    const icons = { '飲食': '🍔', '交通': '🎫', '購物': '🛍️', '住宿': '🏨' };
-                    return icons[cat] || '💰';
-                };
+                <div v-if="activeTab === 'expense'" class="flex space-x-2">
+                    <input v-model="newItem.amount" type="number" placeholder="金額 (EUR)" class="flex-1 bg-slate-50 p-4 rounded-2xl outline-none">
+                    <select v-model="newItem.method" class="w-1/3 bg-slate-50 p-4 rounded-2xl outline-none">
+                        <option value="信用卡">信用卡</option>
+                        <option value="現金">現金</option>
+                    </select>
+                </div>
 
-                onMounted(() => { lucide.createIcons(); });
-                watch(activeTab, () => { setTimeout(() => lucide.createIcons(), 10); });
+                <button @click="addItem" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-blue-100 active:scale-95 transition-all">
+                    確認新增
+                </button>
+                <button @click="showAddModal = false" class="w-full py-2 text-slate-400 font-bold text-sm">取消</button>
+            </div>
+        </div>
+    </div>
 
-                return {
-                    activeTab, selectedDate, dates, itineraryData, flights, expenses, shoppingList,
-                    currentDayPlan, totalExpense, eurInput, showAddModal, newItem, addItem,
-                    openGoogleMaps, tabClass, catStyle, getExpIcon, cityImage, currentCityTitle
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
+
+    createApp({
+        components: {
+            draggable: window.vuedraggable
+        },
+        setup() {
+            const activeTab = ref('itinerary');
+            const selectedDate = ref('2026/02/07');
+            const eurInput = ref(0);
+            const showAddModal = ref(false);
+
+            const dates = [
+                { day: '07', weekday: 'Sat', full: '2026/02/07' },
+                { day: '08', weekday: 'Sun', full: '2026/02/08' },
+                { day: '09', weekday: 'Mon', full: '2026/02/09' },
+                { day: '10', weekday: 'Tue', full: '2026/02/10' },
+                { day: '11', weekday: 'Wed', full: '2026/02/11' },
+                { day: '12', weekday: 'Thu', full: '2026/02/12' },
+                { day: '13', weekday: 'Fri', full: '2026/02/13' },
+                { day: '14', weekday: 'Sat', full: '2026/02/14' },
+                { day: '15', weekday: 'Sun', full: '2026/02/15' },
+                { day: '16', weekday: 'Mon', full: '2026/02/16' },
+                { day: '17', weekday: 'Tue', full: '2026/02/17' }
+            ];
+
+            const itineraryData = ref({
+                '2026/02/07': [
+                    { id: 101, category: '航班', name: '抵達 巴黎戴高樂機場 (CDG)', time: '10:30', remark: '辦理入境與市區接駁', travelTime: '45 min', prevTransportIcon: 'bus' },
+                    { id: 102, category: '住宿', name: 'ibis Paris Gare de Lyon Diderot', time: '14:00', remark: '入住手續', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 103, category: '美食', name: "La Maison d'Isabelle", time: '15:30', remark: '世界冠軍可頌', travelTime: '20 min', prevTransportIcon: 'bus' },
+                    { id: 104, category: '購物', name: '樂蓬馬歇百貨公司', time: '16:30', remark: 'Le Bon Marché Rive Gauche', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 105, category: '美食', name: 'Breizh Café', time: '18:30', remark: '法式可麗餅與甜點', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 106, category: '景點', name: '巴黎聖母院', time: '20:00', remark: 'Notre Dame de Paris' }
+                ],
+                '2026/02/08': [
+                    { id: 201, category: '美食', name: 'Jellycat Pâtisserie', time: '10:00', remark: '可愛拍照甜點店', travelTime: '20 min', prevTransportIcon: 'bus' },
+                    { id: 202, category: '美食', name: 'Bachir 冰淇淋', time: '14:00', remark: '黎巴嫩風格有機冰淇淋', travelTime: '30 min', prevTransportIcon: 'bus' },
+                    { id: 203, category: '美食', name: 'Papy aux Fourneaux', time: '19:00', remark: '溫馨法式晚餐', travelTime: '20 min', prevTransportIcon: 'walking' },
+                    { id: 204, category: '住宿', name: 'ibis Paris Gare de Lyon Diderot', time: '21:30', remark: '回飯店休息' }
+                ],
+                '2026/02/09': [
+                    { id: 301, category: '航班', name: '巴黎 (CDG) ➔ 尼斯 (NCE)', time: '09:00', remark: '搭機前往南法', travelTime: '90 min', prevTransportIcon: 'plane' },
+                    { id: 302, category: '住宿', name: '5 Rue Gustave Deloye (尼斯公寓)', time: '12:00', remark: '入住登記', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 303, category: '美食', name: 'Maison Margaux', time: '14:00', remark: '精緻午餐', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 304, category: '景點', name: '太陽噴泉 & 馬塞納廣場', time: '16:00', remark: 'Fontaine du Soleil', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 305, category: '美食', name: 'Gusti Restaurant', time: '19:00', remark: '義式晚餐' }
+                ],
+                '2026/02/10': [
+                    { id: 401, category: '景點', name: '城堡山公園', time: '09:30', remark: '俯瞰天使灣全景', travelTime: '20 min', prevTransportIcon: 'walking' },
+                    { id: 402, category: '景點', name: '賽雷亞花果市集', time: '11:00', remark: 'Marché Saleya', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 403, category: '美食', name: 'Peixes', time: '13:00', remark: '創意海鮮料理', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 404, category: '景點', name: '尼斯主教座堂 & 老城區', time: '15:00', remark: 'Vieux Nice 巷弄探索', travelTime: '5 min', prevTransportIcon: 'walking' },
+                    { id: 405, category: '住宿', name: '5 Rue Gustave Deloye', time: '20:00', remark: '回公寓休息' }
+                ],
+                '2026/02/11': [
+                    { id: 501, category: '景點', name: '埃茲小鎮 (Èze Village)', time: '10:00', remark: '美麗的中世紀鷹巢村', travelTime: '30 min', prevTransportIcon: 'bus' },
+                    { id: 502, category: '景點', name: '埃茲異國花園', time: '11:30', remark: 'Jardin Exotique d’Èze', travelTime: '40 min', prevTransportIcon: 'bus' },
+                    { id: 503, category: '景點', name: '摩納哥親王宮', time: '15:00', remark: 'Le Monaco Palace 衛兵交接', travelTime: '40 min', prevTransportIcon: 'bus' },
+                    { id: 504, category: '住宿', name: '5 Rue Gustave Deloye', time: '19:00', remark: '返回尼斯' }
+                ],
+                '2026/02/12': [
+                    { id: 601, category: '航班', name: '尼斯 (NCE) ➔ 里斯本 (LIS)', time: '11:00', remark: '前往葡萄牙之旅', travelTime: '60 min', prevTransportIcon: 'plane' },
+                    { id: 602, category: '住宿', name: 'The Visionaire Apartments', time: '15:00', remark: '里斯本入住', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 603, category: '美食', name: 'Fábrica da Nata', time: '16:00', remark: '經典葡式蛋塔', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 604, category: '景點', name: '奧古斯塔街拱門', time: '17:30', remark: 'Arco da Rua Augusta', travelTime: '5 min', prevTransportIcon: 'walking' },
+                    { id: 605, category: '美食', name: 'Nova Wine Bar', time: '19:30', remark: '美酒時光', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 606, category: '景點', name: '聖胡斯塔升降機', time: '21:30', remark: 'Elevador de Santa Justa' }
+                ],
+                '2026/02/13': [
+                    { id: 701, category: '景點', name: '聖若熱城堡', time: '09:30', remark: 'Castelo de S. Jorge', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 702, category: '美食', name: 'Café da Garagem', time: '12:00', remark: '劇場內景觀咖啡', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 703, category: '景點', name: '恩寵觀景台', time: '14:30', remark: 'Miradouro da Graça', travelTime: '15 min', prevTransportIcon: 'bus' },
+                    { id: 704, category: '美食', name: 'Moona Chicken', time: '17:00', remark: '韓式炸雞下午茶', travelTime: '20 min', prevTransportIcon: 'walking' },
+                    { id: 705, category: '美食', name: 'Uma Marisqueira', time: '19:30', remark: '超火紅海鮮燉飯', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 706, category: '住宿', name: 'The Visionaire Apartments', time: '21:30', remark: '回公寓休息' }
+                ],
+                '2026/02/14': [
+                    { id: 801, category: '美食', name: 'Casa Pastéis de Belém', time: '09:00', remark: '蛋塔創始店必朝聖', travelTime: '15 min', prevTransportIcon: 'bus' },
+                    { id: 802, category: '景點', name: '熱羅尼莫斯修道院', time: '11:00', remark: '曼努埃爾式建築傑作', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 803, category: '景點', name: '發現者紀念碑', time: '14:00', remark: 'Padrão dos Descobrimentos', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 804, category: '景點', name: '貝倫塔', time: '15:30', remark: 'Torre de Belém', travelTime: '20 min', prevTransportIcon: 'bus' },
+                    { id: 805, category: '住宿', name: 'The Visionaire Apartments', time: '18:00', remark: '返回飯店休息' }
+                ],
+                '2026/02/15': [
+                    { id: 901, category: '交通', name: '抵達 波多聖本圖車站', time: '12:30', remark: '搭火車到達波多 (São Bento)', travelTime: '15 min', prevTransportIcon: 'train' },
+                    { id: 902, category: '景點', name: '波爾圖主教座堂', time: '14:00', remark: 'Sé do Porto', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 903, category: '景點', name: '維多利亞觀景台', time: '15:30', remark: 'Miradouro da Vitória', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 904, category: '景點', name: '利貝拉碼頭', time: '17:00', remark: 'Ribeira do Porto 黃昏散步', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 905, category: '美食', name: 'Taberna Dos Mercadores', time: '19:00', remark: '精緻傳統葡式餐廳', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 906, category: '住宿', name: "Legends' House", time: '21:00', remark: '入住波多飯店' }
+                ],
+                '2026/02/16': [
+                    { id: 1001, category: '景點', name: '萊羅書店', time: '09:30', remark: 'Livraria Lello 最美書店', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 1002, category: '景點', name: '教士塔', time: '11:30', remark: 'Torre dos Clérigos', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 1003, category: '景點', name: '卡爾莫教堂', time: '14:00', remark: '巨大藍色磁磚牆', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 1004, category: '美食', name: 'Conga (豬扒包)', time: '16:00', remark: '香辣豬扒包在地推薦', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 1005, category: '景點', name: '路易一世大橋', time: '17:30', remark: 'Ponte Luís I 下層步行', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 1006, category: '景點', name: 'Sandeman 波特酒莊', time: '18:30', remark: '波特酒聞名世界', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 1007, category: '景點', name: '莫羅花園欣賞日落', time: '19:30', remark: 'Jardin do Morro 最美日落' }
+                ],
+                '2026/02/17': [
+                    { id: 1101, category: '景點', name: '波爾豪市場', time: '09:00', remark: 'Mercado do Bolhão 在地市場', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 1102, category: '購物', name: '聖卡塔琳娜街', time: '11:00', remark: 'R. de Santa Catarina', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 1103, category: '美食', name: 'Cachorrinho Gazela', time: '13:00', remark: '波多特色熱狗三明治', travelTime: '20 min', prevTransportIcon: 'bus' },
+                    { id: 1104, category: '購物', name: 'Pingo Doce', time: '15:00', remark: '在地超市最後採買', travelTime: '15 min', prevTransportIcon: 'walking' },
+                    { id: 1105, category: '美食', name: 'Brasão Aliados', time: '18:30', remark: 'Francesinha 特色濕答答三明治', travelTime: '10 min', prevTransportIcon: 'walking' },
+                    { id: 1106, category: '住宿', name: "Legends' House", time: '21:00', remark: '整理行李準備返程' }
+                ]
+            });
+
+            const flightList = [
+                { no: 'AF7700', fromCity: 'Paris', fromCode: 'CDG', toCity: 'Nice', toCode: 'NCE', date: '02/09', duration: '1h 30m' },
+                { no: 'TP1273', fromCity: 'Nice', fromCode: 'NCE', toCity: 'Lisbon', toCode: 'LIS', date: '02/12', duration: '2h 45m' }
+            ];
+
+            const hotelList = [
+                { name: 'ibis Paris Gare de Lyon Diderot', dateRange: '2/7 - 2/9', address: '12-15 Avenue Ledru Rollin, Paris' },
+                { name: '尼斯公寓 (AirBnB Style)', dateRange: '2/9 - 2/12', address: '5 Rue Gustave Deloye, Nice' },
+                { name: 'The Visionaire Apartments', dateRange: '2/12 - 2/15', address: 'Praça da Figueira 5, Lisbon' },
+                { name: "Legends' House", dateRange: '2/15 - 2/17', address: 'Rua de Fernandes Tomás 784, Porto' }
+            ];
+
+            const expenses = ref([
+                { id: 1, category: '飲食', name: 'Le Bon Marché 午餐', date: '2026-02-07', amount: 35.0, method: '信用卡' },
+                { id: 2, category: '交通', name: 'RER 票券', date: '2026-02-07', amount: 11.5, method: '現金' }
+            ]);
+
+            const shoppingList = ref([
+                { id: 1, name: 'Longchamp 小羊皮包', img: 'https://images.unsplash.com/photo-1584917033904-493bb3ce3af1?auto=format&fit=crop&w=400&q=80' },
+                { id: 2, name: 'Caudalie 藥妝', img: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80' }
+            ]);
+
+            const currentCityDisplay = computed(() => {
+                const date = selectedDate.value;
+                if (['2026/02/07', '2026/02/08'].includes(date)) return '巴黎 Paris';
+                if (['2026/02/09', '2026/02/10', '2026/02/11'].includes(date)) return '尼斯 Nice';
+                if (['2026/02/12', '2026/02/13', '2026/02/14'].includes(date)) return '里斯本 Lisbon';
+                if (['2026/02/15', '2026/02/16', '2026/02/17'].includes(date)) return '波多 Porto';
+                return '歐洲冒險';
+            });
+
+            const cityImage = computed(() => {
+                const images = {
+                    '巴黎 Paris': 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+                    '尼斯 Nice': 'https://images.unsplash.com/photo-1533619239233-628ce632e948?auto=format&fit=crop&w=800&q=80',
+                    '里斯本 Lisbon': 'https://images.unsplash.com/photo-1585208798174-6cedd862099b?auto=format&fit=crop&w=800&q=80',
+                    '波多 Porto': 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=800&q=80'
                 };
-            }
-        }).mount('#app');
-    </script>
+                return images[currentCityDisplay.value] || images['巴黎 Paris'];
+            });
+
+            const totalExpense = computed(() => expenses.value.reduce((sum, e) => sum + Number(e.amount), 0));
+            const newItem = ref({ name: '', category: '景點', amount: 0, method: '信用卡' });
+
+            const addItem = () => {
+                if (!newItem.value.name) return;
+                
+                if (activeTab.value === 'itinerary') {
+                    if (!itineraryData.value[selectedDate.value]) itineraryData.value[selectedDate.value] = [];
+                    itineraryData.value[selectedDate.value].push({ id: Date.now(), ...newItem.value, time: '12:00' });
+                } else if (activeTab.value === 'expense') {
+                    expenses.value.unshift({ id: Date.now(), ...newItem.value, date: selectedDate.value });
+                } else if (activeTab.value === 'shopping') {
+                    shoppingList.value.unshift({ id: Date.now(), name: newItem.value.name, img: null });
+                }
+                
+                newItem.value = { name: '', category: '景點', amount: 0, method: '信用卡' };
+                showAddModal.value = false;
+            };
+
+            const confirmDelete = (date, index) => {
+                if (confirm('確定要刪除這項行程嗎？')) {
+                    itineraryData.value[date].splice(index, 1);
+                }
+            };
+            
+            const deleteExpense = (id) => { expenses.value = expenses.value.filter(e => e.id !== id); };
+            const confirmDeleteShopping = (id) => { shoppingList.value = shoppingList.value.filter(s => s.id !== id); };
+
+            const openGoogleMaps = (query) => {
+                const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+                window.open(url, '_blank');
+            };
+
+            const catStyle = (cat) => {
+                const styles = {
+                    '航班': 'bg-indigo-100 text-indigo-600',
+                    '景點': 'bg-emerald-100 text-emerald-600',
+                    '美食': 'bg-orange-100 text-orange-600',
+                    '住宿': 'bg-blue-100 text-blue-600',
+                    '購物': 'bg-pink-100 text-pink-600',
+                    '交通': 'bg-slate-100 text-slate-500'
+                };
+                return styles[cat] || 'bg-slate-100 text-slate-500';
+            };
+
+            const expIcon = (cat) => {
+                const icons = { '飲食': '🍔', '交通': '🎫', '購物': '🛍️', '住宿': '🏨', '門票': '🎟️' };
+                return icons[cat] || '💰';
+            };
+            const expCatColor = (cat) => {
+                const colors = { '飲食': 'bg-orange-50 text-orange-500', '交通': 'bg-blue-50 text-blue-500', '購物': 'bg-pink-50 text-pink-500' };
+                return colors[cat] || 'bg-slate-50 text-slate-500';
+            };
+
+            onMounted(() => { 
+                lucide.createIcons(); 
+            });
+
+            // 監聽所有分頁與日期切換，確保 ICON 重新渲染
+            watch([activeTab, selectedDate, showAddModal], () => {
+                nextTick(() => { lucide.createIcons(); });
+            });
+
+            return {
+                activeTab, selectedDate, dates, itineraryData, flightList, hotelList, expenses, shoppingList,
+                currentCityDisplay, cityImage, totalExpense, eurInput, showAddModal, newItem, 
+                addItem, confirmDelete, deleteExpense, confirmDeleteShopping, openGoogleMaps, catStyle, expIcon, expCatColor
+            };
+        }
+    }).mount('#app');
+</script>
+
 </body>
 </html>
